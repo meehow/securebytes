@@ -5,10 +5,9 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
+	"crypto/sha256"
 	"encoding/base64"
 	"errors"
-
-	"golang.org/x/crypto/sha3"
 )
 
 // SecureBytes keeps encryption key and serializer.
@@ -22,7 +21,7 @@ type SecureBytes struct {
 // `key` should provide 256 bits entropy, so if you are using random
 // alphanumeric characters it should have a length of at least 50 characters.
 func New(key []byte) *SecureBytes {
-	hash := sha3.Sum256(key)
+	hash := sha256.Sum256(key)
 	return &SecureBytes{
 		aesKey:         hash[:24],
 		additionalData: hash[24:],
