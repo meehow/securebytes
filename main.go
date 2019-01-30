@@ -72,6 +72,9 @@ func (sb *SecureBytes) Decrypt(data []byte, output interface{}) error {
 	}
 	nonce, ciphertext := data[:nonceSize], data[nonceSize:]
 	plaintext, err := gcm.Open(nil, nonce, ciphertext, sb.additionalData)
+	if err != nil {
+		return err
+	}
 	return sb.Serializer.Decode(bytes.NewBuffer(plaintext), output)
 }
 
