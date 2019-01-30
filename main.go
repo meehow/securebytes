@@ -6,6 +6,7 @@ import (
 	"crypto/cipher"
 	"crypto/rand"
 	"encoding/base64"
+	"errors"
 
 	"golang.org/x/crypto/sha3"
 )
@@ -66,6 +67,9 @@ func (sb *SecureBytes) Decrypt(data []byte, output interface{}) error {
 		return err
 	}
 	nonceSize := gcm.NonceSize()
+	if len(data) < nonceSize {
+		return errors.New("data smaller than nonce")
+	}
 	nonce, ciphertext := data[:nonceSize], data[nonceSize:]
 	plaintext, err := gcm.Open(nil, nonce, ciphertext, sb.additionalData)
 	return sb.Serializer.Decode(bytes.NewBuffer(plaintext), output)
