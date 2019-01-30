@@ -1,6 +1,6 @@
 # Secure Bytes [![GoDoc](https://godoc.org/github.com/github.com/meehow/securebytes?status.svg)](http://godoc.org/github.com/meehow/securebytes) [![Go Report Card](https://goreportcard.com/badge/github.com/meehow/securebytes)](https://goreportcard.com/report/github.com/meehow/securebytes#SecureBytes)
 
-Secure Bytes takes any Go data type, serializes it to JSON or GOB and encrypts it with AES-192.
+Secure Bytes takes any Go data type, serializes it to JSON or GOB and encrypts it with AES-192-GCM.
 The goal of this library is to generate smaller cookies than [securecookie](https://github.com/gorilla/securecookie) does.
 It's achieved by using [Authenticated Encryption](https://en.wikipedia.org/wiki/Authenticated_encryption) instead of HMAC.
 
@@ -63,3 +63,18 @@ If you need plain `[]byte` output, you can use `Encrypt` and `Decrypt` functions
 
 You can find more information in the [documentation](https://godoc.org/github.com/meehow/securebytes#SecureBytes).
 
+## Benchmark
+
+SecureBytes works **2.5 times faster** than SecureCookie and generates **40% smaller** cookies.
+
+```
+goos: linux
+goarch: amd64
+pkg: github.com/meehow/securebytes
+BenchmarkSecureBytesJSON-4    	  300000	      3810 ns/op
+BenchmarkSecureBytesGOB-4     	  300000	      5476 ns/op
+BenchmarkSecureCookieJSON-4   	  200000	      9959 ns/op
+BenchmarkSecureCookieGOB-4    	  100000	     11807 ns/op
+PASS
+ok  	github.com/meehow/securebytes	6.303s
+```
