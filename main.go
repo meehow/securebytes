@@ -84,7 +84,7 @@ func (sb *SecureBytes) EncryptToBase64(input interface{}) (string, error) {
 		return "", err
 	}
 	
-	return base64.StdEncoding.EncodeToString(ciphertext), err
+	return base64.StdEncoding.EncodeToString(ciphertext), ""
 }
 
 // DecryptBase64 decrypts base64 string encrypted with EncryptToBase64
