@@ -80,6 +80,10 @@ func (sb *SecureBytes) Decrypt(data []byte, output interface{}) error {
 // EncryptToBase64 encrypts input and converts to base64 string
 func (sb *SecureBytes) EncryptToBase64(input interface{}) (string, error) {
 	ciphertext, err := sb.Encrypt(input)
+	if err != nil {
+		return "", err
+	}
+	
 	return base64.StdEncoding.EncodeToString(ciphertext), err
 }
 
@@ -89,5 +93,6 @@ func (sb *SecureBytes) DecryptBase64(b64 string, output interface{}) error {
 	if err != nil {
 		return err
 	}
+	
 	return sb.Decrypt(data, output)
 }
