@@ -33,6 +33,16 @@ func New(key []byte) *SecureBytes {
 // to avoid additional signing.
 //	https://en.wikipedia.org/wiki/Authenticated_encryption
 func (sb *SecureBytes) Encrypt(input interface{}) ([]byte, error) {
+	var data bytes.Buffer
+	err := sb.Serializer.Encode(&data, input)
+	if err != nil {
+		return nil, err
+	}
+	return sb.RawEncrypt(data.Bytes())
+}
+
+// RawEncrypt can encrypt only bytes, doesn't do serialization
+func (sb *SecureBytes) RawEncrypt(data []byte) ([]byte, error) {
 	block, err := aes.NewCipher(sb.aesKey)
 	if err != nil {
 		return nil, err
@@ -46,40 +56,46 @@ func (sb *SecureBytes) Encrypt(input interface{}) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	var data bytes.Buffer
-	err = sb.Serializer.Encode(&data, input)
-	if err != nil {
-		return nil, err
-	}
-	ciphertext := gcm.Seal(nonce, nonce, data.Bytes(), sb.additionalData)
+	ciphertext := gcm.Seal(nonce, nonce, data, sb.additionalData)
 	return ciphertext, nil
 }
 
 // Decrypt decrypts data encrypted by Encrypt.
 func (sb *SecureBytes) Decrypt(data []byte, output interface{}) error {
-	block, err := aes.NewCipher(sb.aesKey)
-	if err != nil {
-		return err
-	}
-	gcm, err := cipher.NewGCM(block)
-	if err != nil {
-		return err
-	}
-	nonceSize := gcm.NonceSize()
-	if len(data) < nonceSize {
-		return errors.New("data smaller than nonce")
-	}
-	nonce, ciphertext := data[:nonceSize], data[nonceSize:]
-	plaintext, err := gcm.Open(nil, nonce, ciphertext, sb.additionalData)
+	plaintext, err := sb.RawDecrypt(data)
 	if err != nil {
 		return err
 	}
 	return sb.Serializer.Decode(bytes.NewBuffer(plaintext), output)
 }
 
+// RawDecrypt decrypts data encrypted by RawEncrypt.
+func (sb *SecureBytes) RawDecrypt(data []byte) ([]byte, error) {
+	block, err := aes.NewCipher(sb.aesKey)
+	if err != nil {
+		return nil, err
+	}
+	gcm, err := cipher.NewGCM(block)
+	if err != nil {
+		return nil, err
+	}
+	nonceSize := gcm.NonceSize()
+	if len(data) < nonceSize {
+		return nil, errors.New("data smaller than nonce")
+	}
+	nonce, ciphertext := data[:nonceSize], data[nonceSize:]
+	return gcm.Open(nil, nonce, ciphertext, sb.additionalData)
+}
+
 // EncryptToBase64 encrypts input and converts to base64 string
 func (sb *SecureBytes) EncryptToBase64(input interface{}) (string, error) {
 	ciphertext, err := sb.Encrypt(input)
+	return base64.StdEncoding.EncodeToString(ciphertext), err
+}
+
+// RawEncryptToBase64 encrypts bytes and converts to base64 string
+func (sb *SecureBytes) RawEncryptToBase64(data []byte) (string, error) {
+	ciphertext, err := sb.RawEncrypt(data)
 	return base64.StdEncoding.EncodeToString(ciphertext), err
 }
 
@@ -90,4 +106,13 @@ func (sb *SecureBytes) DecryptBase64(b64 string, output interface{}) error {
 		return err
 	}
 	return sb.Decrypt(data, output)
+}
+
+// RawDecryptBase64 decrypts base64 string encrypted with RawEncryptToBase64
+func (sb *SecureBytes) RawDecryptBase64(b64 string) ([]byte, error) {
+	data, err := base64.StdEncoding.DecodeString(b64)
+	if err != nil {
+		return nil, err
+	}
+	return sb.RawDecrypt(data)
 }
