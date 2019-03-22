@@ -1,7 +1,6 @@
 package securebytes
 
 import (
-	"bytes"
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
@@ -33,12 +32,11 @@ func New(key []byte) *SecureBytes {
 // to avoid additional signing.
 //	https://en.wikipedia.org/wiki/Authenticated_encryption
 func (sb *SecureBytes) Encrypt(input interface{}) ([]byte, error) {
-	var data bytes.Buffer
-	err := sb.Serializer.Encode(&data, input)
+	data, err := sb.Serializer.Marshal(input)
 	if err != nil {
 		return nil, err
 	}
-	return sb.RawEncrypt(data.Bytes())
+	return sb.RawEncrypt(data)
 }
 
 // RawEncrypt can encrypt only bytes, doesn't do serialization
@@ -66,7 +64,7 @@ func (sb *SecureBytes) Decrypt(data []byte, output interface{}) error {
 	if err != nil {
 		return err
 	}
-	return sb.Serializer.Decode(bytes.NewBuffer(plaintext), output)
+	return sb.Serializer.Unmarshal(plaintext, output)
 }
 
 // RawDecrypt decrypts data encrypted by RawEncrypt.
