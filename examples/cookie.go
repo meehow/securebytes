@@ -11,7 +11,13 @@ import (
 
 const cookieName = "securebytes"
 
-var sb = securebytes.New([]byte(os.Getenv("SECRET")))
+var sb = securebytes.New([]byte(os.Getenv("SECRET")), securebytes.ASN1Serializer{})
+
+// Session is a struct which will be saved in a cookie
+type Session struct {
+	UserID int
+	Name   string
+}
 
 func main() {
 	http.HandleFunc("/", handler)
@@ -24,18 +30,22 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	cookie, err := r.Cookie(cookieName)
 	if err == nil {
 		// Cookie found, let's read it
-		var secret map[string]string
-		err = sb.DecryptBase64(cookie.Value, &secret)
+		var session Session
+		err = sb.DecryptBase64(cookie.Value, &session)
 		if err != nil {
 			fmt.Fprintf(w, "Decryption error: %v", err)
 			return
 		}
-		fmt.Fprintf(w, "Your secret cookie: %#v", secret)
+		fmt.Fprintf(w, "Your session cookie: %#v has been encoded to %s",
+			session, cookie.Value)
 		return
 	}
 	// Cookie not found, create a new one
-	secret := map[string]string{"Hi": "Hello"}
-	b64, err := sb.EncryptToBase64(&secret)
+	session := Session{
+		UserID: 1234567890,
+		Name:   "meehow",
+	}
+	b64, err := sb.EncryptToBase64(session)
 	if err != nil {
 		fmt.Fprintf(w, "Encryption error: %v", err)
 		return
