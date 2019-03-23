@@ -33,28 +33,24 @@ func encryptDecrypt(t *testing.T, sb *SecureBytes) {
 }
 
 func TestEncryptDecryptJSON(t *testing.T) {
-	sb := New(nil)
-	sb.Serializer = JSONSerializer{}
+	sb := New(nil, JSONSerializer{})
 	encryptDecrypt(t, sb)
 }
 
 func TestEncryptDecryptGOB(t *testing.T) {
-	sb := New(nil)
-	sb.Serializer = GOBSerializer{}
+	sb := New(nil, GOBSerializer{})
 	encryptDecrypt(t, sb)
 }
 
 func TestEncryptDecryptASN1(t *testing.T) {
-	sb := New(nil)
-	sb.Serializer = ASN1Serializer{}
+	sb := New(nil, ASN1Serializer{})
 	encryptDecrypt(t, sb)
 }
 
 func BenchmarkSecureBytesJSON(b *testing.B) {
 	var b64 string
 	var result testStruct
-	sb := New(nil)
-	sb.Serializer = JSONSerializer{}
+	sb := New(nil, JSONSerializer{})
 	for i := 0; i < b.N; i++ {
 		b64, _ = sb.EncryptToBase64(secret)
 		sb.DecryptBase64(b64, &result)
@@ -64,8 +60,7 @@ func BenchmarkSecureBytesJSON(b *testing.B) {
 func BenchmarkSecureBytesGOB(b *testing.B) {
 	var b64 string
 	var result testStruct
-	sb := New(nil)
-	sb.Serializer = GOBSerializer{}
+	sb := New(nil, GOBSerializer{})
 	for i := 0; i < b.N; i++ {
 		b64, _ = sb.EncryptToBase64(secret)
 		sb.DecryptBase64(b64, &result)
@@ -75,8 +70,7 @@ func BenchmarkSecureBytesGOB(b *testing.B) {
 func BenchmarkSecureBytesASN1(b *testing.B) {
 	var b64 string
 	var result testStruct
-	sb := New(nil)
-	sb.Serializer = ASN1Serializer{}
+	sb := New(nil, ASN1Serializer{})
 	for i := 0; i < b.N; i++ {
 		b64, _ = sb.EncryptToBase64(secret)
 		sb.DecryptBase64(b64, &result)

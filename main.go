@@ -19,12 +19,12 @@ type SecureBytes struct {
 // New returns a new SecureBytes with JSONSerializer.
 // `key` should provide 256 bits entropy, so if you are using random
 // alphanumeric characters it should have a length of at least 50 characters.
-func New(key []byte) *SecureBytes {
+func New(key []byte, serializer Serializer) *SecureBytes {
 	hash := sha256.Sum256(key)
 	return &SecureBytes{
 		aesKey:         hash[:24],
 		additionalData: hash[24:],
-		Serializer:     JSONSerializer{},
+		Serializer:     serializer,
 	}
 }
 
