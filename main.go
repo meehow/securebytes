@@ -16,6 +16,8 @@ type SecureBytes struct {
 	Serializer     Serializer
 }
 
+var encoding = base64.RawURLEncoding
+
 // New returns a new SecureBytes with JSONSerializer.
 // `key` should provide 256 bits entropy, so if you are using random
 // alphanumeric characters it should have a length of at least 50 characters.
@@ -88,18 +90,18 @@ func (sb *SecureBytes) RawDecrypt(data []byte) ([]byte, error) {
 // EncryptToBase64 encrypts input and converts to base64 string
 func (sb *SecureBytes) EncryptToBase64(input interface{}) (string, error) {
 	ciphertext, err := sb.Encrypt(input)
-	return base64.StdEncoding.EncodeToString(ciphertext), err
+	return encoding.EncodeToString(ciphertext), err
 }
 
 // RawEncryptToBase64 encrypts bytes and converts to base64 string
 func (sb *SecureBytes) RawEncryptToBase64(data []byte) (string, error) {
 	ciphertext, err := sb.RawEncrypt(data)
-	return base64.StdEncoding.EncodeToString(ciphertext), err
+	return encoding.EncodeToString(ciphertext), err
 }
 
 // DecryptBase64 decrypts base64 string encrypted with EncryptToBase64
 func (sb *SecureBytes) DecryptBase64(b64 string, output interface{}) error {
-	data, err := base64.StdEncoding.DecodeString(b64)
+	data, err := encoding.DecodeString(b64)
 	if err != nil {
 		return err
 	}
@@ -108,7 +110,7 @@ func (sb *SecureBytes) DecryptBase64(b64 string, output interface{}) error {
 
 // RawDecryptBase64 decrypts base64 string encrypted with RawEncryptToBase64
 func (sb *SecureBytes) RawDecryptBase64(b64 string) ([]byte, error) {
-	data, err := base64.StdEncoding.DecodeString(b64)
+	data, err := encoding.DecodeString(b64)
 	if err != nil {
 		return nil, err
 	}
