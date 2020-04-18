@@ -1,11 +1,8 @@
 package securebytes
 
 import (
-	"bytes"
 	"reflect"
 	"testing"
-
-	"github.com/gorilla/securecookie"
 )
 
 type testStruct struct {
@@ -74,29 +71,5 @@ func BenchmarkSecureBytesASN1(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		b64, _ = sb.EncryptToBase64(secret)
 		sb.DecryptBase64(b64, &result)
-	}
-}
-
-func BenchmarkSecureCookieJSON(b *testing.B) {
-	var b64 string
-	var result testStruct
-	hashKey := bytes.Repeat([]byte("H"), 32)
-	blockKey := bytes.Repeat([]byte("B"), 24)
-	var sc = securecookie.New(hashKey, blockKey)
-	sc.SetSerializer(securecookie.JSONEncoder{})
-	for i := 0; i < b.N; i++ {
-		b64, _ = sc.Encode("", secret)
-		sc.Decode("", b64, &result)
-	}
-}
-func BenchmarkSecureCookieGOB(b *testing.B) {
-	var b64 string
-	var result testStruct
-	hashKey := bytes.Repeat([]byte("H"), 32)
-	blockKey := bytes.Repeat([]byte("B"), 24)
-	var sc = securecookie.New(hashKey, blockKey)
-	for i := 0; i < b.N; i++ {
-		b64, _ = sc.Encode("", secret)
-		sc.Decode("", b64, &result)
 	}
 }
